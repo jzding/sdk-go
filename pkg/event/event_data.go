@@ -17,6 +17,8 @@ package event
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/redhat-cne/sdk-go/pkg/common"
 )
 
 // DataType ...
@@ -85,9 +87,9 @@ type Data struct {
 //		"value": "ACQUIRING-SYNC"
 //	}
 type DataValue struct {
-	Resource  string      `json:"resource" example:"/cluster/node/clock"`
-	DataType  DataType    `json:"dataType" example:"metric"`
-	ValueType ValueType   `json:"valueType" example:"decimal64.3"`
+	Resource  string      `json:"ResourceAddress" example:"/cluster/node/clock"`
+	DataType  DataType    `json:"data_type" example:"metric"`
+	ValueType ValueType   `json:"value_type" example:"decimal64.3"`
 	Value     interface{} `json:"value" example:"100.3"`
 }
 
@@ -135,4 +137,29 @@ func (v *DataValue) SetResource(r string) error {
 		return err
 	}
 	return nil
+}
+
+func (d *Data) GetResourceName() string {
+	if common.IsV1Api(d.Version) {
+		return "resource"
+	}
+	return "ResourceAddress"
+}
+
+func (d *Data) GetDataTypeName() string {
+	if common.IsV1Api(d.Version) {
+		return "dataType"
+	}
+	return "data_type"
+}
+
+func (d *Data) GetValueTypeName() string {
+	if common.IsV1Api(d.Version) {
+		return "valueType"
+	}
+	return "value_type"
+}
+
+func (d *Data) GetValueName() string {
+	return "value"
 }

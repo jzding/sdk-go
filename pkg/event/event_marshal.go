@@ -123,16 +123,16 @@ func writeJSONData(in *Data, writer io.Writer, stream *jsoniter.Stream) error {
 			}
 			count++
 			stream.WriteObjectStart()
-			stream.WriteObjectField("resource")
+			stream.WriteObjectField(in.GetResourceName())
 			stream.WriteString(v.GetResource())
 			stream.WriteMore()
-			stream.WriteObjectField("dataType")
+			stream.WriteObjectField(in.GetDataTypeName())
 			stream.WriteString(string(v.DataType))
 			stream.WriteMore()
-			stream.WriteObjectField("valueType")
+			stream.WriteObjectField(in.GetValueTypeName())
 			stream.WriteString(string(v.ValueType))
 			stream.WriteMore()
-			stream.WriteObjectField("value")
+			stream.WriteObjectField(in.GetValueName())
 			switch v.ValueType {
 			case ENUMERATION:
 				// if type is a string

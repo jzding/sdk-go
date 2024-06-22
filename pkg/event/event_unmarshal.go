@@ -49,12 +49,12 @@ func ReadDataJSON(out *Data, reader io.Reader) error {
 func readDataJSONFromIterator(out *Data, iterator *jsoniter.Iterator) error {
 	var (
 		// Universally parseable fields.
-		version string
-		data    []DataValue
+		data []DataValue
 		// These fields require knowledge about the specversion to be parsed.
 		//schemaurl jsoniter.Any
 	)
 
+READ_VERSION:
 	for key := iterator.ReadObject(); key != ""; key = iterator.ReadObject() {
 		// Check if we have some error in our error cache
 		if iterator.Error != nil {
@@ -64,9 +64,23 @@ func readDataJSONFromIterator(out *Data, iterator *jsoniter.Iterator) error {
 		// If no specversion ...
 		switch key {
 		case "version":
-			version = iterator.ReadString()
+			out.Version = iterator.ReadString()
+			break READ_VERSION
+		default:
+			iterator.Skip()
+		}
+	}
+
+	for key := iterator.ReadObject(); key != ""; key = iterator.ReadObject() {
+		// Check if we have some error in our error cache
+		if iterator.Error != nil {
+			return iterator.Error
+		}
+
+		// If no specversion ...
+		switch key {
 		case "values":
-			data, _ = readDataValue(iterator)
+			data, _ = readDataValue(iterator, out)
 
 		default:
 			iterator.Skip()
@@ -76,7 +90,6 @@ func readDataJSONFromIterator(out *Data, iterator *jsoniter.Iterator) error {
 	if iterator.Error != nil {
 		return iterator.Error
 	}
-	out.Version = version
 	out.Values = data
 	return nil
 }
@@ -148,7 +161,7 @@ func readTimestamp(iter *jsoniter.Iterator) *types.Timestamp {
 	return t
 }
 
-func readDataValue(iter *jsoniter.Iterator) ([]DataValue, error) {
+func readDataValue(iter *jsoniter.Iterator, d *Data) ([]DataValue, error) {
 	var values []DataValue
 	var err error
 	for iter.ReadArray() {
@@ -156,13 +169,13 @@ func readDataValue(iter *jsoniter.Iterator) ([]DataValue, error) {
 		dv := DataValue{}
 		for dvField := iter.ReadObject(); dvField != ""; dvField = iter.ReadObject() {
 			switch dvField {
-			case "resource":
+			case d.GetResourceName():
 				dv.Resource = iter.ReadString()
-			case "dataType":
+			case d.GetDataTypeName():
 				dv.DataType = DataType(iter.ReadString())
-			case "valueType":
+			case d.GetValueTypeName():
 				dv.ValueType = ValueType(iter.ReadString())
-			case "value":
+			case d.GetValueName():
 				cacheValue = iter.Read()
 			default:
 				iter.Skip()
@@ -199,6 +212,7 @@ func readData(iter *jsoniter.Iterator) (*Data, error) {
 		Values:  []DataValue{},
 	}
 
+READ_VERSION:
 	for key := iter.ReadObject(); key != ""; key = iter.ReadObject() {
 		// Check if we have some error in our error cache
 		if iter.Error != nil {
@@ -207,8 +221,20 @@ func readData(iter *jsoniter.Iterator) (*Data, error) {
 		switch key {
 		case "version":
 			data.Version = iter.ReadString()
+			break READ_VERSION
+		default:
+			iter.Skip()
+		}
+	}
+
+	for key := iter.ReadObject(); key != ""; key = iter.ReadObject() {
+		// Check if we have some error in our error cache
+		if iter.Error != nil {
+			return data, iter.Error
+		}
+		switch key {
 		case "values":
-			values, err := readDataValue(iter)
+			values, err := readDataValue(iter, data)
 			if err != nil {
 				return data, err
 			}

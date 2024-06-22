@@ -20,6 +20,7 @@ import (
 
 	cloudevent "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	"github.com/redhat-cne/sdk-go/pkg/common"
 	"github.com/redhat-cne/sdk-go/pkg/pubsub"
 )
 
@@ -28,8 +29,10 @@ func (e *Event) NewCloudEvent(ps *pubsub.PubSub) (*cloudevent.Event, error) {
 	ce := cloudevent.NewEvent(cloudevent.VersionV03)
 	ce.SetTime(e.GetTime())
 	ce.SetType(e.Type)
-	ce.SetDataContentType(cloudevent.ApplicationJSON)
-	ce.SetSubject(e.Source)   // subject is set to source of the event object
+	if common.IsV1Api(e.Data.GetVersion()) {
+		ce.SetDataContentType(cloudevent.ApplicationJSON)
+		ce.SetSubject(e.Source) // subject is set to source of the event object
+	}
 	ce.SetSource(ps.Resource) // bus address
 	ce.SetSpecVersion(cloudevent.VersionV03)
 	ce.SetID(uuid.New().String())
