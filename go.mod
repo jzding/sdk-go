@@ -1,6 +1,6 @@
 module github.com/redhat-cne/sdk-go
 
-go 1.21
+go 1.20
 
 require (
 	github.com/Azure/go-amqp v0.17.5
