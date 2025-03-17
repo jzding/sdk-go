@@ -83,8 +83,8 @@ func (u *URI) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 }
 
 // Validate url value
-func (u URI) Validate() bool {
-	return u.IsAbs()
+func (u *URI) Validate() bool {
+	return u.URL.IsAbs()
 }
 
 // String returns the full string representation of the URI-Reference.

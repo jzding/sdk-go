@@ -190,6 +190,7 @@ func Clone(v interface{}) interface{} {
 		return &Timestamp{v.Time}
 	}
 	panic(fmt.Errorf("invalid CNE value: %#v", v))
+	return nil
 }
 
 // ToBool accepts a bool value or canonical "true"/"false" string.

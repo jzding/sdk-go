@@ -43,6 +43,7 @@ var (
 type Protocol struct {
 	protocol.Binder
 	Protocol *httpP.Protocol
+	Client   httpClient.Client
 }
 type ServiceResourcePath string
 
@@ -699,7 +700,7 @@ func (h *Server) ReloadSubsFromStore() {
 func (c *Protocol) Send(e cloudevents.Event) error {
 	if c.Protocol == nil || c.Protocol.Target == nil {
 		return errorhandler.SenderNotFoundError{
-			Name: c.Address,
+			Name: c.Protocol.Target.String(),
 			Desc: "sender not found",
 		}
 	}
